@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeView Pro - Clean Highlight View</title>
-    <!-- Prism.js CSS -->
+    <title>CodeView Pro - Monokai Noir</title>
+    <!-- Prism.js Tomorrow Night as a base -->
     <link href="prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
-            --bg-dark: #1e1e1e;
-            --header-bg: #252526;
-            --border-color: #3c3c3c;
-            --gutter-bg: #1e1e1e;
-            --gutter-text: #858585;
-            --accent: #007acc;
+            /* Monokai Noir Palette (Pure Black Background) */
+            --bg-dark: #000000;
+            --header-bg: #0a0a0a;
+            --border-color: #1e1e1e;
+            --gutter-bg: #000000;
+            --gutter-text: #75715e;
+            --accent: #a6e22e; /* Monokai Green */
+            --text-main: #f8f8f2;
         }
 
         body {
@@ -23,7 +25,7 @@
             flex-direction: column;
             height: 100vh;
             background-color: var(--bg-dark);
-            color: #fff;
+            color: var(--text-main);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
         }
@@ -40,18 +42,18 @@
 
         .btn-download {
             background-color: var(--accent);
-            color: white;
+            color: #000000;
             border: none;
             padding: 8px 15px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
             font-size: 13px;
-            transition: background 0.2s;
+            transition: opacity 0.2s;
         }
 
         .btn-download:hover {
-            background-color: #0062a3;
+            opacity: 0.8;
         }
 
         .main-container {
@@ -73,12 +75,12 @@
         }
 
         .pane-title {
-            background: #2d2d2d;
+            background: #0a0a0a;
             padding: 5px 15px;
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #888;
+            color: #75715e;
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -89,7 +91,6 @@
             overflow: hidden;
         }
 
-        /* Enforce identical font and spacing metrics for alignment */
         .gutter, textarea, pre[class*="language-"] {
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
             font-size: 14px !important;
@@ -100,11 +101,11 @@
         }
 
         .gutter {
-            width: 50px;
+            width: 55px;
             background-color: var(--gutter-bg);
             color: var(--gutter-text);
             text-align: right;
-            padding-right: 12px !important;
+            padding-right: 15px !important;
             user-select: none;
             border-right: 1px solid var(--border-color);
             overflow: hidden;
@@ -114,7 +115,7 @@
         textarea {
             flex: 1;
             background: var(--bg-dark);
-            color: #d4d4d4;
+            color: var(--text-main);
             border: none;
             padding-left: 20px !important;
             padding-right: 20px !important;
@@ -123,13 +124,13 @@
             tab-size: 4;
             white-space: pre;
             overflow: auto;
+            caret-color: #f8f8f0;
         }
 
         .preview-area {
             flex: 1;
-            display: block;
             overflow: auto;
-            background: #1e1e1e;
+            background: var(--bg-dark);
         }
 
         pre[class*="language-"] {
@@ -139,22 +140,32 @@
             overflow: visible !important;
         }
 
-        /* Scrollbar styling */
+        /* Monokai Syntax Highlighting Overrides */
+        .token.comment, .token.prolog, .token.doctype, .token.cdata { color: #75715e; }
+        .token.punctuation { color: #f8f8f2; }
+        .token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol, .token.deleted { color: #f92672; }
+        .token.boolean, .token.number { color: #ae81ff; }
+        .token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted { color: #e6db74; }
+        .token.operator, .token.entity, .token.url, .language-css .token.string, .style .token.string { color: #f8f8f2; }
+        .token.atrule, .token.attr-value, .token.keyword { color: #66d9ef; }
+        .token.function, .token.class-name { color: #a6e22e; }
+        .token.regex, .token.important, .token.variable { color: #fd971f; }
+
+        /* Scrollbar styling - Ultra dark */
         ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-track { background: #1e1e1e; }
-        ::-webkit-scrollbar-thumb { background: #333; }
-        ::-webkit-scrollbar-thumb:hover { background: #444; }
+        ::-webkit-scrollbar-track { background: #000000; }
+        ::-webkit-scrollbar-thumb { background: #1e1e1e; }
+        ::-webkit-scrollbar-thumb:hover { background: #333333; }
     </style>
 </head>
 <body>
 
 <header>
-    <div><strong>CodeView Pro</strong></div>
+    <div><strong>CodeView Pro <span style="color: var(--accent)">●</span></strong></div>
     <button class="btn-download" onclick="downloadFile()">Download .txt</button>
 </header>
 
 <div class="main-container">
-    <!-- LEFT: EDITOR -->
     <div class="pane pane-left">
         <div class="pane-title">Editor</div>
         <div class="editor-container">
@@ -163,20 +174,17 @@
         </div>
     </div>
 
-    <!-- RIGHT: PREVIEW (Clean View, No Gutter) -->
     <div class="pane">
         <div class="pane-title">Highlighted View</div>
         <div class="preview-area" id="preview-area">
-            <pre id="preview-pre" class="language-html"><code id="preview-code"></code></pre>
+            <pre id="preview-pre" class="language-javascript"><code id="preview-code"></code></pre>
         </div>
     </div>
 </div>
 
-<!-- Prism.js core and common languages -->
 <script src="prism.min.js"></script>
 <script src="prism-css.min.js"></script>
 <script src="prism-javascript.min.js"></script>
-<script src="prism-markup.min.js"></script>
 
 <script>
     const editor = document.getElementById('editor');
@@ -186,8 +194,6 @@
 
     function update() {
         const text = editor.value;
-        
-        // Update Line Numbers for left side only
         const lines = text.split('\n');
         const lineCount = lines.length;
         let gutterContent = '';
@@ -195,22 +201,15 @@
             gutterContent += i + '\n';
         }
         leftGutter.textContent = gutterContent;
-
-        // Update Highlighting
         previewCode.textContent = text;
         Prism.highlightElement(previewCode);
-        
         syncScroll();
     }
 
     function syncScroll() {
         const scrollTop = editor.scrollTop;
         const scrollLeft = editor.scrollLeft;
-        
-        // Sync Editor Gutter
         leftGutter.scrollTop = scrollTop;
-        
-        // Sync Right Pane Scroll
         previewArea.scrollTop = scrollTop;
         previewArea.scrollLeft = scrollLeft;
     }
@@ -239,32 +238,11 @@
         document.body.removeChild(anchor);
     }
 
-    // Event Listeners
     editor.addEventListener('input', update);
     editor.addEventListener('keydown', handleTab);
     editor.addEventListener('scroll', syncScroll);
 
-    // Default Code
-    editor.value = `<!-- HTML -->
-<div class="welcome">
-    <h1>Hello World</h1>
-</div>
-
-<style>
-/* CSS */
-.welcome {
-    color: skyblue;
-    text-align: center;
-}
-</style>
-
-<script>
-// JS
-function greet() {
-    console.log("Left-side lines only, full scroll sync!");
-}
-greet();
-<\/script>`;
+    editor.value = `// Monokai Noir Edition\nfunction pureBlackTheme() {\n    const ui = "High Contrast Monokai";\n    console.log("Background is now pure black (#000000).");\n}\n\npureBlackTheme();`;
 
     update();
 </script>
