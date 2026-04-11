@@ -53,9 +53,6 @@
             font-weight: bold;
             font-size: 13px;
             transition: opacity 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .btn-open {
@@ -70,15 +67,6 @@
 
         .btn:hover {
             opacity: 0.8;
-        }
-
-        .shortcut-hint {
-            font-size: 10px;
-            opacity: 0.6;
-            background: rgba(0,0,0,0.2);
-            padding: 2px 4px;
-            border-radius: 3px;
-            text-transform: uppercase;
         }
 
         .main-container {
@@ -183,12 +171,8 @@
 <header>
     <div><strong>CodeView Pro <span style="color: var(--accent)">●</span></strong></div>
     <div class="controls">
-        <button class="btn btn-open" onclick="readFile()">
-            Open File <span class="shortcut-hint">Alt+J</span>
-        </button>
-        <button class="btn btn-download" onclick="downloadFile()">
-            Save As... <span class="shortcut-hint">Alt+L</span>
-        </button>
+        <button class="btn btn-open" onclick="readFile()">Open File</button>
+        <button class="btn btn-download" onclick="downloadFile()">Save As...</button>
     </div>
 </header>
 
@@ -240,7 +224,6 @@
         previewArea.scrollLeft = scrollLeft;
     }
 
-    // Handle Tab key inside textarea
     function handleTab(e) {
         if (e.key === 'Tab') {
             e.preventDefault();
@@ -252,20 +235,6 @@
         }
     }
 
-    // Global Shortcuts Handler
-    window.addEventListener('keydown', (e) => {
-        // Alt + J for Open
-        if (e.altKey && e.key.toLowerCase() === 'j') {
-            e.preventDefault();
-            readFile();
-        }
-        // Alt + L for Save As
-        if (e.altKey && e.key.toLowerCase() === 'l') {
-            e.preventDefault();
-            downloadFile();
-        }
-    });
-
     // Read File Implementation
     function readFile() {
         const input = document.createElement('input');
@@ -273,7 +242,6 @@
         input.accept = '.txt,.js,.html,.css,.json';
         input.onchange = e => {
             const file = e.target.files[0];
-            if (!file) return;
             const reader = new FileReader();
             reader.onload = event => {
                 editor.value = event.target.result;
@@ -284,10 +252,11 @@
         input.click();
     }
 
-    // "Save As" Implementation
+    // Enhanced "Save As" Implementation
     async function downloadFile() {
         const text = editor.value;
 
+        // Use File System Access API if available (Chrome, Edge, Brave)
         if ('showSaveFilePicker' in window) {
             try {
                 const handle = await window.showSaveFilePicker({
@@ -301,14 +270,19 @@
                 await writable.write(text);
                 await writable.close();
             } catch (err) {
-                console.log('Save cancelled or error:', err);
+                console.log('Save As cancelled or failed:', err);
             }
         } else {
+            // Fallback for Firefox and Safari
             const blob = new Blob([text], { type: 'text/plain' });
             const anchor = document.createElement('a');
             anchor.download = 'code_export.txt';
             anchor.href = window.URL.createObjectURL(blob);
+            anchor.target = '_blank';
+            anchor.style.display = 'none';
+            document.body.appendChild(anchor);
             anchor.click();
+            document.body.removeChild(anchor);
         }
     }
 
@@ -317,7 +291,7 @@
     editor.addEventListener('scroll', syncScroll);
 
     // Initial Content
-    editor.value = `// Welcome to CodeView Pro\n// Shortcuts:\n// ALT + J -> Open File\n// ALT + L -> Save As\n\nfunction init() {\n    console.log("Ready to code.");\n}\n\ninit();`;
+    editor.value = `// Monokai Noir Edition\nfunction saveAsDemo() {\n    console.log("Click 'Save As' to choose your folder!");\n}\n\nsaveAsDemo();`;
     update();
 </script>
 

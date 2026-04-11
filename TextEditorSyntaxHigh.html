@@ -7,15 +7,15 @@
     <link href="prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
-            /* Monokai Noir Palette */
+            /* Monokai Noir Palette (Pure Black Background) */
             --bg-dark: #000000;
             --header-bg: #0a0a0a;
             --border-color: #1e1e1e;
             --gutter-bg: #000000;
             --gutter-text: #75715e;
             --accent: #a6e22e; /* Monokai Green */
-            --secondary: #66d9ef; /* Monokai Blue */
             --text-main: #f8f8f2;
+            --secondary-accent: #66d9ef; /* Monokai Blue for Import */
         }
 
         body {
@@ -40,7 +40,7 @@
             z-index: 10;
         }
 
-        .controls {
+        .header-actions {
             display: flex;
             gap: 10px;
         }
@@ -53,32 +53,20 @@
             font-weight: bold;
             font-size: 13px;
             transition: opacity 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-open {
-            background-color: var(--secondary);
-            color: #000;
         }
 
         .btn-download {
             background-color: var(--accent);
-            color: #000;
+            color: #000000;
+        }
+
+        .btn-open {
+            background-color: var(--secondary-accent);
+            color: #000000;
         }
 
         .btn:hover {
             opacity: 0.8;
-        }
-
-        .shortcut-hint {
-            font-size: 10px;
-            opacity: 0.6;
-            background: rgba(0,0,0,0.2);
-            padding: 2px 4px;
-            border-radius: 3px;
-            text-transform: uppercase;
         }
 
         .main-container {
@@ -165,31 +153,33 @@
             overflow: visible !important;
         }
 
-        /* Monokai Syntax Overrides */
-        .token.comment { color: #75715e; }
+        /* Monokai Syntax Highlighting Overrides */
+        .token.comment, .token.prolog, .token.doctype, .token.cdata { color: #75715e; }
         .token.punctuation { color: #f8f8f2; }
-        .token.property, .token.tag, .token.boolean, .token.number { color: #f92672; }
-        .token.selector, .token.attr-name, .token.string { color: #e6db74; }
-        .token.keyword { color: #66d9ef; }
-        .token.function { color: #a6e22e; }
+        .token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol, .token.deleted { color: #f92672; }
+        .token.boolean, .token.number { color: #ae81ff; }
+        .token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted { color: #e6db74; }
+        .token.operator, .token.entity, .token.url, .language-css .token.string, .style .token.string { color: #f8f8f2; }
+        .token.atrule, .token.attr-value, .token.keyword { color: #66d9ef; }
+        .token.function, .token.class-name { color: #a6e22e; }
+        .token.regex, .token.important, .token.variable { color: #fd971f; }
 
+        /* Scrollbar styling - Ultra dark */
         ::-webkit-scrollbar { width: 10px; height: 10px; }
         ::-webkit-scrollbar-track { background: #000000; }
         ::-webkit-scrollbar-thumb { background: #1e1e1e; }
+        ::-webkit-scrollbar-thumb:hover { background: #333333; }
     </style>
 </head>
 <body>
 
 <header>
     <div><strong>CodeView Pro <span style="color: var(--accent)">●</span></strong></div>
-    <div class="controls">
-        <button class="btn btn-open" onclick="readFile()">
-            Open File <span class="shortcut-hint">Alt+J</span>
-        </button>
-        <button class="btn btn-download" onclick="downloadFile()">
-            Save As... <span class="shortcut-hint">Alt+L</span>
-        </button>
+    <div class="header-actions">
+        <button class="btn btn-open" onclick="triggerFileInput()">Open File</button>
+        <button class="btn btn-download" onclick="downloadFile()">Download .txt</button>
     </div>
+    <input type="file" id="file-input" style="display: none;" accept=".js,.html,.css,.txt,.json,.md">
 </header>
 
 <div class="main-container">
@@ -209,14 +199,16 @@
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<script src="prism.min.js"></script>
+<script src="prism-css.min.js"></script>
+<script src="prism-javascript.min.js"></script>
 
 <script>
     const editor = document.getElementById('editor');
     const previewCode = document.getElementById('preview-code');
     const previewArea = document.getElementById('preview-area');
     const leftGutter = document.getElementById('left-gutter');
+    const fileInput = document.getElementById('file-input');
 
     function update() {
         const text = editor.value;
@@ -240,7 +232,6 @@
         previewArea.scrollLeft = scrollLeft;
     }
 
-    // Handle Tab key inside textarea
     function handleTab(e) {
         if (e.key === 'Tab') {
             e.preventDefault();
@@ -252,72 +243,44 @@
         }
     }
 
-    // Global Shortcuts Handler
-    window.addEventListener('keydown', (e) => {
-        // Alt + J for Open
-        if (e.altKey && e.key.toLowerCase() === 'j') {
-            e.preventDefault();
-            readFile();
-        }
-        // Alt + L for Save As
-        if (e.altKey && e.key.toLowerCase() === 'l') {
-            e.preventDefault();
-            downloadFile();
-        }
-    });
-
-    // Read File Implementation
-    function readFile() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.txt,.js,.html,.css,.json';
-        input.onchange = e => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = event => {
-                editor.value = event.target.result;
-                update();
-            };
-            reader.readAsText(file);
-        };
-        input.click();
+    // --- NEW: FILE READING LOGIC ---
+    function triggerFileInput() {
+        fileInput.click();
     }
 
-    // "Save As" Implementation
-    async function downloadFile() {
-        const text = editor.value;
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
 
-        if ('showSaveFilePicker' in window) {
-            try {
-                const handle = await window.showSaveFilePicker({
-                    suggestedName: 'script.js',
-                    types: [{
-                        description: 'Code Files',
-                        accept: { 'text/plain': ['.js', '.html', '.css', '.txt', '.json'] },
-                    }],
-                });
-                const writable = await handle.createWritable();
-                await writable.write(text);
-                await writable.close();
-            } catch (err) {
-                console.log('Save cancelled or error:', err);
-            }
-        } else {
-            const blob = new Blob([text], { type: 'text/plain' });
-            const anchor = document.createElement('a');
-            anchor.download = 'code_export.txt';
-            anchor.href = window.URL.createObjectURL(blob);
-            anchor.click();
-        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const contents = e.target.result;
+            editor.value = contents;
+            update(); // Refresh line numbers and highlighting
+        };
+        reader.readAsText(file);
+    });
+    // -------------------------------
+
+    function downloadFile() {
+        const text = editor.value;
+        const blob = new Blob([text], { type: 'text/plain' });
+        const anchor = document.createElement('a');
+        anchor.download = 'code_export.txt';
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.target = '_blank';
+        anchor.style.display = 'none';
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
     }
 
     editor.addEventListener('input', update);
     editor.addEventListener('keydown', handleTab);
     editor.addEventListener('scroll', syncScroll);
 
-    // Initial Content
-    editor.value = `// Welcome to CodeView Pro\n// Shortcuts:\n// ALT + J -> Open File\n// ALT + L -> Save As\n\nfunction init() {\n    console.log("Ready to code.");\n}\n\ninit();`;
+    editor.value = `// Monokai Noir Edition\nfunction pureBlackTheme() {\n    const ui = "High Contrast Monokai";\n    console.log("Background is now pure black (#000000).");\n}\n\npureBlackTheme();`;
+
     update();
 </script>
 
