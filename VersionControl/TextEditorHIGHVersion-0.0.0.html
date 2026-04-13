@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CodeView Pro - Monokai Noir</title>
-    <!-- Prism.js Tomorrow Night as a base -->
     <link href="prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
@@ -16,6 +15,7 @@
             --gutter-text: #75715e;
             --accent: #a6e22e; /* Monokai Green */
             --text-main: #f8f8f2;
+            --secondary-accent: #66d9ef; /* Monokai Blue for Import */
         }
 
         body {
@@ -40,9 +40,12 @@
             z-index: 10;
         }
 
-        .btn-download {
-            background-color: var(--accent);
-            color: #000000;
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
             border: none;
             padding: 8px 15px;
             border-radius: 4px;
@@ -52,7 +55,17 @@
             transition: opacity 0.2s;
         }
 
-        .btn-download:hover {
+        .btn-download {
+            background-color: var(--accent);
+            color: #000000;
+        }
+
+        .btn-open {
+            background-color: var(--secondary-accent);
+            color: #000000;
+        }
+
+        .btn:hover {
             opacity: 0.8;
         }
 
@@ -162,7 +175,11 @@
 
 <header>
     <div><strong>CodeView Pro <span style="color: var(--accent)">●</span></strong></div>
-    <button class="btn-download" onclick="downloadFile()">Download .txt</button>
+    <div class="header-actions">
+        <button class="btn btn-open" onclick="triggerFileInput()">Open File</button>
+        <button class="btn btn-download" onclick="downloadFile()">Download .txt</button>
+    </div>
+    <input type="file" id="file-input" style="display: none;" accept=".js,.html,.css,.txt,.json,.md">
 </header>
 
 <div class="main-container">
@@ -191,6 +208,7 @@
     const previewCode = document.getElementById('preview-code');
     const previewArea = document.getElementById('preview-area');
     const leftGutter = document.getElementById('left-gutter');
+    const fileInput = document.getElementById('file-input');
 
     function update() {
         const text = editor.value;
@@ -224,6 +242,25 @@
             update();
         }
     }
+
+    // --- NEW: FILE READING LOGIC ---
+    function triggerFileInput() {
+        fileInput.click();
+    }
+
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const contents = e.target.result;
+            editor.value = contents;
+            update(); // Refresh line numbers and highlighting
+        };
+        reader.readAsText(file);
+    });
+    // -------------------------------
 
     function downloadFile() {
         const text = editor.value;
